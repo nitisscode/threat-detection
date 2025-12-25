@@ -1,4 +1,4 @@
-from django.urls import path
+from django.urls import path, include
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView, TokenBlacklistView
 
 from .views import UserAPIView, UserDetailAPIView, EventAPIView, EventDetailAPIView, AlertAPIView, AlertDetailAPIView
@@ -13,4 +13,7 @@ urlpatterns = [
     path('events/<uuid:id>/', EventDetailAPIView.as_view(), name='event_detail'),
     path('alerts/', AlertAPIView.as_view(), name='alert_list'),
     path('alerts/<uuid:id>/', AlertDetailAPIView.as_view(), name='alert_detail'),
+
+    path("", include("threat.swagger")),
+
 ]

@@ -40,8 +40,7 @@ class EventDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
 class AlertAPIView(generics.ListAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = AlertSerializer
-    # filter_backends = [DjangoFilterBackend, SearchFilter]
-    # filterset_class = AlterFilter
+    filterset_class = AlterFilter
     search_fields = ['event__source', 'event__event_type', 'event__severity', 'status']
     queryset = Alert.objects.all()
 
