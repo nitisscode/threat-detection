@@ -62,7 +62,27 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-#### Step 4: Set Up PostgreSQL Database
+#### Step 4: Create Environment Variables File
+
+Create a `.env` file in the `cyethack` directory (same level as `manage.py`) with the following content:
+
+```env
+SECRET_KEY=your-secret-key-here-change-in-production
+DEBUG=True
+DB_NAME=postgres
+DB_USER=postgres
+DB_PASSWORD=postgres
+DB_HOST=localhost
+DB_PORT=5432
+```
+
+**Important Notes:**
+- Replace `your-secret-key-here-change-in-production` with a secure random string for production
+- For development, you can use: `django-insecure-^-==xbk!l6)9&$o)*6t-faloo5rnvy+t2@=*#+3*2ejj1xc^@7`
+- The `.env` file is already in `.gitignore` and will not be committed to version control
+- Do not use quotes around values in the `.env` file
+
+#### Step 5: Set Up PostgreSQL Database
 
 1. Install PostgreSQL if not already installed
 2. Create a new database:
@@ -78,21 +98,16 @@ CREATE DATABASE postgres;
 \q
 ```
 
-3. Update database credentials in `cyethack/settings.py` if needed:
-   - Database name: `postgres`
-   - User: `postgres`
-   - Password: `postgres`
-   - Host: `localhost`
-   - Port: `5432`
+3. The database credentials are configured via the `.env` file created in Step 4. Update the `.env` file if your PostgreSQL setup differs.
 
-#### Step 5: Run Migrations
+#### Step 6: Run Migrations
 
 ```bash
 python manage.py makemigrations
 python manage.py migrate
 ```
 
-#### Step 6: Create Superuser
+#### Step 7: Create Superuser
 
 ```bash
 python manage.py createsuperuser
@@ -100,13 +115,16 @@ python manage.py createsuperuser
 
 Follow the prompts to create an admin user.
 
-#### Step 7: Run the Development Server
+#### Step 8: Run the Development Server
 
 ```bash
 python manage.py runserver
 ```
 
-The server will be available at `http://127.0.0.1:8000/`
+The server will be available at:
+- API: `http://127.0.0.1:8000/api/`
+- API Documentation: `http://127.0.0.1:8000/api/swagger/`
+- Admin Panel: `http://127.0.0.1:8000/admin/`
 
 ### Option 2: Docker Setup (Recommended)
 
@@ -117,7 +135,27 @@ git clone <repository-url>
 cd threat-detection/cyethack
 ```
 
-#### Step 2: Build and Run with Docker Compose
+#### Step 2: Create Environment Variables File
+
+Create a `.env` file in the `cyethack` directory (same level as `manage.py`) with the following content:
+
+```env
+SECRET_KEY=your-secret-key-here-change-in-production
+DEBUG=True
+DB_NAME=postgres
+DB_USER=postgres
+DB_PASSWORD=postgres
+DB_HOST=db
+DB_PORT=5432
+```
+
+**Important Notes:**
+- For Docker setup, use `DB_HOST=db` (the service name from docker-compose.yml)
+- Replace `your-secret-key-here-change-in-production` with a secure random string
+- For development, you can use: `django-insecure-^-==xbk!l6)9&$o)*6t-faloo5rnvy+t2@=*#+3*2ejj1xc^@7`
+- The `.env` file is already in `.gitignore` and will not be committed to version control
+
+#### Step 3: Build and Run with Docker Compose
 
 ```bash
 docker-compose up --build
@@ -129,15 +167,17 @@ This will:
 - Run migrations automatically
 - Start the Django development server on port 8000
 
-#### Step 3: Create Superuser (in a new terminal)
+#### Step 4: Create Superuser (in a new terminal)
 
 ```bash
 docker-compose exec web python manage.py createsuperuser
 ```
 
-#### Step 4: Access the Application
+#### Step 5: Access the Application
 
 - API: `http://localhost:8000/api/`
+- API Documentation (Swagger): `http://localhost:8000/api/swagger/`
+- API Documentation (ReDoc): `http://localhost:8000/api/redoc/`
 - Admin Panel: `http://localhost:8000/admin/`
 
 #### Useful Docker Commands
@@ -161,6 +201,15 @@ docker-compose exec web python manage.py createsuperuser
 # Access Django shell
 docker-compose exec web python manage.py shell
 ```
+
+## API Documentation
+
+The API includes interactive Swagger and ReDoc documentation:
+
+- **Swagger UI**: `http://localhost:8000/api/swagger/` - Interactive API documentation
+- **ReDoc**: `http://localhost:8000/api/redoc/` - Alternative API documentation format
+
+Both documentation interfaces allow you to test API endpoints directly from the browser.
 
 ## API Endpoints
 
@@ -239,6 +288,8 @@ curl -X GET http://localhost:8000/api/events/ \
 - **djangorestframework-simplejwt 5.5.1** - JWT authentication
 - **django-filter 22.1** - Filtering support
 - **psycopg2-binary 2.9.11** - PostgreSQL adapter
+- **python-dotenv 1.2.1** - Environment variable management
+- **drf-yasg 1.21.11** - Swagger/OpenAPI documentation
 
 ## Development
 
@@ -305,13 +356,54 @@ python manage.py migrate threat zero
 python manage.py migrate
 ```
 
+### SECRET_KEY Error
+
+If you encounter `ImproperlyConfigured: The SECRET_KEY setting must not be empty`:
+
+1. **Check if `.env` file exists**: Ensure the `.env` file is in the `cyethack` directory (same level as `manage.py`)
+2. **Verify file format**: The `.env` file should have:
+   ```env
+   SECRET_KEY=your-secret-key-here
+   ```
+   - No quotes around values
+   - No spaces around the `=` sign
+   - One variable per line
+3. **Check file location**: The `.env` file should be at `cyethack/.env` (not in `cyethack/cyethack/`)
+4. **Restart the server**: After creating/updating the `.env` file, restart your Django development server
+
 ## Environment Variables
 
-For production, consider using environment variables for sensitive settings:
+The project uses a `.env` file for environment configuration. Create this file in the `cyethack` directory with the following variables:
 
-- `SECRET_KEY` - Django secret key
-- `DEBUG` - Debug mode (set to False in production)
-- `DATABASE_NAME`, `DATABASE_USER`, `DATABASE_PASSWORD`, `DATABASE_HOST`, `DATABASE_PORT`
+### Required Variables
+
+- **SECRET_KEY** - Django secret key (required, no default)
+  - Generate a secure key for production: `python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"`
+  
+- **DEBUG** - Debug mode (default: `True`)
+  - Set to `False` in production
+
+### Database Variables
+
+- **DB_NAME** - PostgreSQL database name (default: `postgres`)
+- **DB_USER** - PostgreSQL username (default: `postgres`)
+- **DB_PASSWORD** - PostgreSQL password (default: `postgres`)
+- **DB_HOST** - Database host (default: `localhost` for local, `db` for Docker)
+- **DB_PORT** - Database port (default: `5432`)
+
+### Example `.env` File
+
+```env
+SECRET_KEY=django-insecure-^-==xbk!l6)9&$o)*6t-faloo5rnvy+t2@=*#+3*2ejj1xc^@7
+DEBUG=True
+DB_NAME=postgres
+DB_USER=postgres
+DB_PASSWORD=postgres
+DB_HOST=localhost
+DB_PORT=5432
+```
+
+**Note:** The `.env` file is gitignored and should never be committed to version control. For production deployments, use secure environment variable management provided by your hosting platform.
 
 ## License
 
