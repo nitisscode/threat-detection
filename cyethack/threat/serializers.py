@@ -6,7 +6,7 @@ from .models import User, Event, Alert
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ["id", "email", "first_name", "last_name", "role", "password", "created_at", "updated_at"]
+        fields = ["id", "email", "username", "first_name", "last_name", "role", "password", "created_at", "updated_at"]
         extra_kwargs ={
             "password": {"write_only": True}
         }
